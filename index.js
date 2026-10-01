@@ -1,6 +1,6 @@
 // === Constants ===
 const BASE = "https://fsa-crud-2aa9294fe819.herokuapp.com/api";
-const COHORT = ""; // Make sure to change this!
+const COHORT = "/2608-Bronson"; // Make sure to change this!
 const API = BASE + COHORT;
 
 // === State ===
@@ -85,6 +85,56 @@ function PartyList() {
   return $ul;
 }
 
+async function addParty(party) {
+  try {
+    await fetch(API + "/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(party),
+    });
+    await getParties();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function NewPartyForm() {
+  const $form = document.createElement("form");
+  $form.innerHTML = `
+    <label>
+      Name
+      <input name="name" required />
+    </label>
+    <label>
+      Description
+      <input name="description" required />
+    </label>
+    <label>
+      Profile Picture
+      <input name="date" required />
+    </label>
+    <label>
+      Location
+      <input name="location" required />
+    </label>
+    <button>Submit Party</button>
+  `;
+
+  $form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const data = new FormData($form);
+    addParty({
+      name: data.get("name"),
+      description: data.get("description"),
+      date: data.get("date"),
+      location: data.get("location"),
+    });
+  });
+
+  return $form;
+}
+
 /** Detailed information about the selected party */
 function SelectedParty() {
   if (!selectedParty) {
@@ -113,8 +163,8 @@ function GuestList() {
   const $ul = document.createElement("ul");
   const guestsAtParty = guests.filter((guest) =>
     rsvps.find(
-      (rsvp) => rsvp.guestId === guest.id && rsvp.eventId === selectedParty.id
-    )
+      (rsvp) => rsvp.guestId === guest.id && rsvp.eventId === selectedParty.id,
+    ),
   );
 
   // Simple components can also be created anonymously:
@@ -137,6 +187,8 @@ function render() {
       <section>
         <h2>Upcoming Parties</h2>
         <PartyList></PartyList>
+        <h3>Add An Upcoming New Party</h3>
+        <NewPartyForm></NewPartyForm>
       </section>
       <section id="selected">
         <h2>Party Details</h2>
@@ -147,6 +199,7 @@ function render() {
 
   $app.querySelector("PartyList").replaceWith(PartyList());
   $app.querySelector("SelectedParty").replaceWith(SelectedParty());
+  $app.querySelector("NewPartyForm").replaceWith(NewPartyForm());
 }
 
 async function init() {
