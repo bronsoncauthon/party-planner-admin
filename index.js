@@ -57,6 +57,18 @@ async function getGuests() {
   }
 }
 
+async function deleteParty(id) {
+  try {
+    await fetch(API + "/events/" + id, {
+      method: "DELETE",
+    });
+    selectedParty = undefined;
+    await getParties();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 // === Components ===
 
 /** Party name that shows more details about the party when clicked */
@@ -110,8 +122,8 @@ function NewPartyForm() {
       <input name="description" required />
     </label>
     <label>
-      Profile Picture
-      <input name="date" required />
+      Date
+      <input name="date" type="date" required />
     </label>
     <label>
       Location
@@ -124,10 +136,11 @@ function NewPartyForm() {
     event.preventDefault();
 
     const data = new FormData($form);
+    const date = new Date(data.get("date")).toISOString();
     addParty({
       name: data.get("name"),
       description: data.get("description"),
-      date: data.get("date"),
+      date,
       location: data.get("location"),
     });
   });
@@ -152,8 +165,12 @@ function SelectedParty() {
     <address>${selectedParty.location}</address>
     <p>${selectedParty.description}</p>
     <GuestList></GuestList>
+    <button>Delete Party</button>
   `;
   $party.querySelector("GuestList").replaceWith(GuestList());
+
+  const $delete = $party.querySelector("button");
+  $delete.addEventListener("click", () => deleteParty(selectedParty.id));
 
   return $party;
 }
